@@ -1,0 +1,85 @@
+/*
+ * LUT.asm
+ */ 
+
+ 	.include "m32def.inc"
+	.org 0x0000
+	jmp MAIN
+
+	.org 0x0050
+
+MAIN:
+	LDI R16, HIGH(RAMEND)
+	OUT SPH, R16
+	LDI R16, LOW(RAMEND)
+	OUT SPL, R16
+
+	CLR R27
+	LDI R26,0x80 
+
+	LDI R16, 0xFF
+	OUT DDRC, R16
+
+	LDI R16, 0X01
+	ST X+, R16
+
+	LDI R16, 0X02
+	ST X+, R16
+
+	LDI R16, 0X04
+	ST X+, R16
+
+	LDI R16, 0X08
+	ST X+, R16
+
+	LDI R16, 0X10
+	ST X+, R16
+
+	LDI R16, 0X20
+	ST X+, R16
+
+	LDI R16, 0X40
+	ST X+, R16
+
+	LDI R16, 0X80
+	ST X+, R16
+
+	LDI R17, 0
+	CLR R27
+	LDI R26 , 0x80
+	
+	LBL2:
+		CPI R17 , 8
+		BRNE LOOP
+		LDI R17 , 0
+		LDI R26, 0x80
+
+
+	LOOP:
+		INC R17
+		LD R18 , X+
+		OUT PORTC, R18
+		CALL DELAY
+	RJMP LBL2
+
+DELAY:
+	LDI R20, 0xFF
+
+	DLBL1:
+		LDI R21, 0xFF
+		
+		DLBL2:
+				LDI R22 , 0X02
+				DLBL3:
+					
+					DEC R22
+				BRNE DLBL3
+				
+			DEC R21
+		BRNE DLBL2
+		
+		DEC R20
+	BRNE DLBL1
+	
+
+	RET

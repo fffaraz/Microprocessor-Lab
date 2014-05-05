@@ -1,0 +1,82 @@
+.INCLUDE "M32DEF.INC"
+
+.DEF 	TEMP = R31
+.DEF	DECODEARG = R30
+
+.ORG 0
+	RJMP	RESET
+
+RESET :
+	//initialize stack
+	LDI		R16 , LOW(RAMEND)
+	OUT		SPL , R16
+	LDI		R16 , HIGH(RAMEND)
+	OUT		SPH , R16
+	
+	//initializing port c for output
+	SER		TEMP
+	OUT 	DDRC , TEMP
+	CLR		TEMP
+	OUT		PORTC , TEMP
+	
+	//initializing adc multiplexer
+	LDI		TEMP,0b00100000
+	OUT		ADMUX , TEMP
+	
+LOOP :	
+	//initializing adc control and status
+	LDI		TEMP , 0b11000000
+	OUT		ADCSRA , TEMP
+	
+	//wait until adc conversion finishes
+INNERLOOP :
+	IN		TEMP , ADCSRA
+	SBRS	TEMP , 4
+	RJMP	INNERLOOP
+	
+	//reading conversion result
+	IN		DECODEARG , ADCH
+	
+	//decode and show result
+	CALL	DECODE
+	OUT		PORTC , DECODEARG
+	
+	//do the process again
+	RJMP	LOOP
+
+//========================DECODE routin======================	
+DECODE :
+	CPI		DECODEARG , 51
+	BRSH	PART2	
+	LDI		DECODEARG , 0b00000001
+	RJMP	ENDIF
+	
+PART2 :
+	CPI		DECODEARG , 102
+	BRSH	PART3
+	LDI		DECODEARG , 0b00000011
+	RJMP	ENDIF
+	
+PART3 :
+	CPI		DECODEARG , 153
+	BRSH	PART4
+	LDI		DECODEARG , 0b00000111
+	RJMP	ENDIF
+	
+PART4 :
+	CPI		DECODEARG , 204
+	BRSH	PART5
+	LDI		DECODEARG , 0b00001111
+	RJMP	ENDIF
+	
+PART5 :
+	CPI		DECODEARG , 255
+	BREQ	PART6
+	LDI		DECODEARG , 0b00011111
+	RJMP	ENDIF
+	
+PART6 :
+	LDI		DECODEARG , 0b00111111
+	
+ENDIF :
+	RET
