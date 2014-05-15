@@ -4,17 +4,17 @@
 .DEF TEMP1 = R27
 .DEF TEMP2 = R28
 
-.DEF CNT  = R16 // COUNTER
+.DEF CNT  = R16 ; COUNTER
 
-.DEF A0   = R17 // ADC 0
-.DEF A1   = R18 // ADC 1
+.DEF A0   = R17 ; ADC 0
+.DEF A1   = R18 ; ADC 1
 .DEF TL   = R19
 .DEF TH   = R20
-.DEF TS   = R21 // TIMER STATUS
-.DEF MRL  = R22 // MODE RIGHT/LEFT
-.DEF MNU  = R23 // MODE NUMBER
-.DEF MSTA = R24 // STATE START
-.DEF MEND = R25 // STATE END
+.DEF TS   = R21 ; TIMER STATUS
+.DEF MRL  = R22 ; MODE RIGHT/LEFT
+.DEF MNU  = R23 ; MODE NUMBER
+.DEF MSTA = R24 ; STATE START
+.DEF MEND = R25 ; STATE END
 
 .DEF LED  = R29
 
@@ -25,41 +25,41 @@
 .def lcd_data=r26
 
 
-//VECTOR
+; VECTOR
 .ORG 0
 JMP RESET
 
 .ORG 0x00E
 JMP TIM1_COMPA
 
-//MAIN
+; MAIN
 .ORG 0x32
 RESET:
 
-//STACK
+; STACK
 LDI R16, LOW(RAMEND)
 OUT SPL, R16
 LDI R16, HIGH(RAMEND)
 OUT SPH, R16
 
-//PORTC
+; PORTC
 SER TEMP1
 OUT DDRC, TEMP1
 CALL TEST
 
-//LCD
+; LCD
 call lcd_init
 call delay
 
 
-//TIMER1 SETUP
-LDI TEMP1, 5 // CLK/1024
+; TIMER1 SETUP
+LDI TEMP1, 5 ; CLK/1024
 OUT TCCR1B, TEMP1
 LDI TEMP1, 0b00010000
 OUT TIMSK, TEMP1
 
-//SEI
-//LLL: JMP LLL;
+; SEI
+;LLL: JMP LLL
 
 CALL SET_TIME
 CALL SET_MODE
@@ -70,7 +70,7 @@ SEI
 
 LOOP:
 
-//LCD
+; LCD
 LDI lcd_data, 0b10000000
 CALL LCD_CMD
 CALL delay
@@ -107,7 +107,7 @@ JMP LOOP
 
 TIM1_COMPA:
 
-// RESET TIMER
+; RESET TIMER
 CLR TEMP2
 OUT TCNT1L, TEMP2
 OUT TCNT1H, TEMP2
@@ -115,7 +115,7 @@ OUT TCNT1H, TEMP2
 CALL SET_TIME
 CALL SET_MODE
 
-// CHECK END
+; CHECK END
 CP LED, MEND
 BRNE NEXT_3
 MOV LED, MSTA
@@ -123,7 +123,7 @@ RJMP NEXT_2
 
 NEXT_3:
 
-// SHIFT
+; SHIFT
 CPI MRL, 1
 BRNE NEXT_1
 LSL LED
@@ -140,7 +140,7 @@ BRNE CONTINUE
 MOV LED, MSTA
 CONTINUE:
 
-// OUTPUT
+; OUTPUT
 OUT PORTC, LED
 
 
@@ -150,20 +150,20 @@ RETI
 
 
 SET_MODE:
-// ADC0
+; ADC0
 LDI TEMP1,0b00100000
 OUT ADMUX, TEMP1
-// INIT
+; INIT
 LDI TEMP1, 0b11000000
 OUT ADCSRA, TEMP1
-// WAIT
+; WAIT
 AND0WAIT:
 IN TEMP1, ADCSRA
 SBRS TEMP1, 4
 RJMP AND0WAIT
-// READ
+; READ
 IN A0, ADCH
-// COMPARE
+; COMPARE
 CPI A0, 50
 BRSH MP2
 LDI MRL, 1
@@ -204,7 +204,7 @@ LDI MRL, 2
 LDI MNU, 2
 LDI MSTA, 192
 LDI MEND, 3
-// END
+; END
 END_MODE:
 RET
 
@@ -212,25 +212,25 @@ RET
 
 SET_TIME:
 
-//15625 = 3D09
-// x2   = 7A12
-// x3   = B71B
-// x4   = F424
+;15625 = 3D09
+; x2   = 7A12
+; x3   = B71B
+; x4   = F424
 
-// ADC1
+; ADC1
 LDI TEMP1,0b00100001
 OUT ADMUX, TEMP1
-// INIT
+; INIT
 LDI TEMP1, 0b11000000
 OUT ADCSRA, TEMP1
-// WAIT
+; WAIT
 AND1WAIT:
 IN TEMP1, ADCSRA
 SBRS TEMP1, 4
 RJMP AND1WAIT
-// READ
+; READ
 IN A1, ADCH
-// COMPARE
+; COMPARE
 CPI A1, 64
 BRSH PART2
 LDI TL, 0x09
@@ -259,7 +259,7 @@ LDI TL, 0x1B
 LDI TH, 0xB7
 LDI TS, 4
 
-// END
+; END
 END_SET:
 OUT OCR1AL, TL
 OUT OCR1AH, TH
@@ -367,7 +367,7 @@ mov temp,lcd_data
 andi temp,0xf0
 ; write high nibel in port
 out lcd_port,temp
-sbi lcd_port,rs  // write at display
+sbi lcd_port,rs  ; write at display
 cbi lcd_port,rw
 ; change en from 1 to 0
 sbi lcd_port,en 
@@ -379,7 +379,7 @@ lsl temp
 lsl temp
 lsl temp
 out lcd_port,temp
-sbi lcd_port,rs  // write at display
+sbi lcd_port,rs  ; write at display
 cbi lcd_port,rw
 ; change en from 1 to 0
 sbi lcd_port,en
